@@ -1,0 +1,38 @@
+{
+    "name": "block basher",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "Browser Events Advanced": "github:Tomhausen/Browser-Events-Advanced#v0.1.0",
+        "Sprites Advanced": "github:Tomhausen/Sprites-Advanced#v0.0.2",
+        "pxt-arcade-image-transform": "github:robo-technical-group/pxt-arcade-image-transform#v1.0.9",
+        "pxt-status-bar": "github:jwunderl/pxt-status-bar#v0.4.2",
+        "arcade-text": "github:microsoft/arcade-text#v1.3.0",
+        "Timers": "github:microsoft/arcade-timers#v1.1.0",
+        "tileData": "github:neintoes/arcade-tile-data#f58f9ce61c28247dc3d3426c87d96ee6e49f47c8",
+        "Tiles Advanced": "github:Tomhausen/The-Code-Zone-Tiles-Advanced#v0.5.9"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "main.py",
+        "images.g.jres",
+        "images.g.ts",
+        "tilemap.g.jres",
+        "tilemap.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "2.0.3",
+        "pxt": "10.0.23",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "pyprj"
+}
