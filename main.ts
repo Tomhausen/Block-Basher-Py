@@ -56,7 +56,7 @@ function make_lives_text(location: any) {
 function spawn_block(location: any) {
     tiles.setTileAt(location, assets.tile`block`)
     tiles.setWallAt(location, true)
-    let block_life = 3 + randint(-2, 2)
+    let block_life = lives + randint(-2, 2)
     tiles.setDataNumber(location, "life", block_life)
     make_lives_text(location)
 }
@@ -266,10 +266,12 @@ function vertical_destroyer_hit(location: tiles.Location) {
 //  /GM2
 function block_damage(location: any) {
     let effect_sprite: Sprite;
+    //  BH4
     if (tiles.tileAtLocationEquals(location, assets.tile`unbreakable`)) {
         return
     }
     
+    //  /BH4
     let new_life = tiles.readDataNumber(location, "life") - 1
     tiles.readDataSprite(location, "text").destroy()
     //  BH3
@@ -292,8 +294,7 @@ function block_damage(location: any) {
         effect_sprite.image.fill(2)
         tiles.placeOnTile(effect_sprite, location)
         effect_sprite.setFlag(SpriteFlag.Invisible, true)
-        effect_sprite.startEffect(effects.ashes, 200)
-        effect_sprite.lifespan = 200
+        effect_sprite.destroy(effects.ashes, 200)
         //  /BH1
         //  BH3
         power_up_bar.value += 1

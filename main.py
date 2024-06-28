@@ -58,7 +58,7 @@ def make_lives_text(location):
 def spawn_block(location):
     tiles.set_tile_at(location, assets.tile("block"))
     tiles.set_wall_at(location, True)
-    block_life = 3 + randint(-2, 2)
+    block_life = lives + randint(-2, 2)
     tiles.set_data_number(location, "life", block_life)
     make_lives_text(location)
 
@@ -233,8 +233,10 @@ def vertical_destroyer_hit(location: tiles.Location):
 # /GM2
 
 def block_damage(location):
+    # BH4
     if tiles.tile_at_location_equals(location, assets.tile("unbreakable")):
         return
+    # /BH4
     new_life = tiles.read_data_number(location, "life") - 1
     tiles.read_data_sprite(location, "text").destroy()
     # BH3
@@ -256,8 +258,7 @@ def block_damage(location):
         effect_sprite.image.fill(2)
         tiles.place_on_tile(effect_sprite, location)
         effect_sprite.set_flag(SpriteFlag.INVISIBLE, True)
-        effect_sprite.start_effect(effects.ashes, 200)
-        effect_sprite.lifespan = 200
+        effect_sprite.destroy(effects.ashes, 200)
         # /BH1
         # BH3
         power_up_bar.value +=1
