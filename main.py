@@ -4,6 +4,9 @@ class SpriteKind:
     # GM1
     path = SpriteKind.create()
     # /GM1
+    # BH6
+    randomiser = SpriteKind.create()
+    # /BH6
 
 # vars
 proj_count = 10
@@ -66,6 +69,31 @@ def spawn_bonus_ball(location):
     bonus_ball.set_flag(SpriteFlag.AUTO_DESTROY, True)
 # /BH2
 
+# GM2
+def spawn_special_block(location):
+    if randint(1, 2) == 1:
+        tiles.set_tile_at(location, assets.tile("horizontal"))
+    else:
+        tiles.set_tile_at(location, assets.tile("vertical"))
+    tiles.set_wall_at(location, True)
+    block_life = 3 + randint(-2, 2)
+    tiles.set_data_number(location, "life", block_life)
+    make_lives_text(location)
+# /GM2
+
+# BH4
+def spawn_unbreakable_block(location):
+    tiles.set_tile_at(location, assets.tile("unbreakable"))
+    tiles.set_wall_at(location, True)
+# /BH4
+
+# BH6
+def spawn_randomiser(location):
+    randomiser = sprites.create(assets.image("randomiser"), SpriteKind.randomiser)
+    tiles.place_on_tile(randomiser, location)
+    randomiser.set_flag(SpriteFlag.AUTO_DESTROY, True)
+# /BH6
+
 def spawn_row():
     for col in range(10):
         if randint(1, 5) > 1:
@@ -74,6 +102,18 @@ def spawn_row():
         elif randint(1, 5) == 1:
             spawn_bonus_ball(tiles.get_tile_location(col, 0))
         # /BH2
+        # GM2
+        elif randint(1, 5) == 1:
+            spawn_special_block(tiles.get_tile_location(col, 0))
+        # /GM2
+        # BH4
+        elif randint(1, 5) == 1:
+            spawn_unbreakable_block(tiles.get_tile_location(col, 0))
+        # /BH4
+        # BH6
+        elif randint(1, 5) == 1:
+            spawn_randomiser(tiles.get_tile_location(col, 0))
+        # /BH6
     music.knock.play()
 
 def move_block(location: tiles.Location):
@@ -90,11 +130,21 @@ def move_row():
     all_blocks.reverse()
     for location in all_blocks:
         if location.bottom > ghost.top - 16:
+            # BH4
+            if tiles.tile_at_location_equals(location, assets.tile("unbreakable")):
+                tiles.set_tile_at(location, image.create(16, 16))
+                tiles.set_wall_at(location, False)
+                continue
+            # /BH4
             game.over(False)
         move_block(location)
     # BH2
     for ball in sprites.all_of_kind(SpriteKind.food):
         ball.y += 16
+    # /BH2
+    # BH6
+    for randomiser in sprites.all_of_kind(SpriteKind.randomiser):
+        randomiser.y += 16
     # /BH2
 
 def cycle_blocks():
@@ -152,6 +202,36 @@ def collect_bonus_ball(proj, ball):
 sprites.on_overlap(SpriteKind.projectile, SpriteKind.food, collect_bonus_ball)
 # /BH2
 
+# BH6
+def hit_randomiser(proj, randomiser):
+    angle = spriteutils.degrees_to_radians(randint(1, 360))
+    spriteutils.set_velocity_at_angle(proj, angle, proj_speed)
+    spriteutils.place_angle_from(proj, angle, 5, randomiser)
+sprites.on_overlap(SpriteKind.projectile, SpriteKind.randomiser, hit_randomiser)
+# /BH6
+
+# GM2
+def horizontal_destroyer_hit(location: tiles.Location):
+    for block in tilesAdvanced.get_all_tiles_where_wall_is(True):
+        if block.row == location.row:
+            block_damage(block)
+            effect_sprite = sprites.create(image.create(160, 2))
+            effect_sprite.image.fill(9)
+            effect_sprite.set_position(80, block.y)
+            effect_sprite.lifespan = 500
+# /GM2
+
+# GM2
+def vertical_destroyer_hit(location: tiles.Location):
+    for block in tilesAdvanced.get_all_tiles_where_wall_is(True):
+        if block.col == location.col:
+            block_damage(block)
+            effect_sprite = sprites.create(image.create(2, 120))
+            effect_sprite.image.fill(9)
+            effect_sprite.set_position(block.x, 60)
+            effect_sprite.lifespan = 500
+# /GM2
+
 def block_damage(location):
     if tiles.tile_at_location_equals(location, assets.tile("unbreakable")):
         return
@@ -184,6 +264,12 @@ def block_damage(location):
         # /BH3
 
 def wall_hit(proj, location):
+    # GM2
+    if tiles.tile_at_location_equals(location, assets.tile("horizontal")):
+        horizontal_destroyer_hit(location)
+    if tiles.tile_at_location_equals(location, assets.tile("vertical")):
+        vertical_destroyer_hit(location)
+    # /GM2
     if tiles.tile_at_location_equals(location, assets.tile("block")):
         block_damage(location)
     if proj.y > ghost.y:
@@ -221,15 +307,19 @@ def path():
 # /GH1
 
 def trigger_game_loop():
-    # BH3
-    global one_shot_active
-    # /BH3
+    # BH3 and BH5
+    global one_shot_active, lives # EDIT
+    # /BH3 and /BH5
     if len(tiles.get_tiles_by_type(assets.tile("block"))) < 1:
         game.over(True)
     if len(sprites.all_of_kind(SpriteKind.projectile)) < 1:
         # BH3
         one_shot_active = False
         # /BH3
+        # BH5
+        if randint(1, 1) == 1:
+            lives += 1
+        # /BH5
         cycle_blocks()
 sprites.on_destroyed(SpriteKind.projectile, trigger_game_loop)
 

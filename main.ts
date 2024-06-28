@@ -3,9 +3,12 @@ namespace SpriteKind {
     export const cursor = SpriteKind.create()
     //  GM1
     export const path = SpriteKind.create()
+    //  /GM1
+    //  BH6
+    export const randomiser = SpriteKind.create()
 }
 
-//  /GM1
+//  /BH6
 //  vars
 let proj_count = 10
 let proj_speed = 200
@@ -66,6 +69,36 @@ function spawn_bonus_ball(location: any) {
 }
 
 //  /BH2
+//  GM2
+function spawn_special_block(location: any) {
+    if (randint(1, 2) == 1) {
+        tiles.setTileAt(location, assets.tile`horizontal`)
+    } else {
+        tiles.setTileAt(location, assets.tile`vertical`)
+    }
+    
+    tiles.setWallAt(location, true)
+    let block_life = 3 + randint(-2, 2)
+    tiles.setDataNumber(location, "life", block_life)
+    make_lives_text(location)
+}
+
+//  /GM2
+//  BH4
+function spawn_unbreakable_block(location: any) {
+    tiles.setTileAt(location, assets.tile`unbreakable`)
+    tiles.setWallAt(location, true)
+}
+
+//  /BH4
+//  BH6
+function spawn_randomiser(location: any) {
+    let randomiser = sprites.create(assets.image`randomiser`, SpriteKind.randomiser)
+    tiles.placeOnTile(randomiser, location)
+    randomiser.setFlag(SpriteFlag.AutoDestroy, true)
+}
+
+//  /BH6
 function spawn_row() {
     for (let col = 0; col < 10; col++) {
         if (randint(1, 5) > 1) {
@@ -73,10 +106,22 @@ function spawn_row() {
         } else if (randint(1, 5) == 1) {
             //  BH2
             spawn_bonus_ball(tiles.getTileLocation(col, 0))
+        } else if (randint(1, 5) == 1) {
+            //  /BH2
+            //  GM2
+            spawn_special_block(tiles.getTileLocation(col, 0))
+        } else if (randint(1, 5) == 1) {
+            //  /GM2
+            //  BH4
+            spawn_unbreakable_block(tiles.getTileLocation(col, 0))
+        } else if (randint(1, 5) == 1) {
+            //  /BH4
+            //  BH6
+            spawn_randomiser(tiles.getTileLocation(col, 0))
         }
         
     }
-    //  /BH2
+    //  /BH6
     music.knock.play()
 }
 
@@ -95,6 +140,14 @@ function move_row() {
     all_blocks.reverse()
     for (let location of all_blocks) {
         if (location.bottom > ghost.top - 16) {
+            //  BH4
+            if (tiles.tileAtLocationEquals(location, assets.tile`unbreakable`)) {
+                tiles.setTileAt(location, image.create(16, 16))
+                tiles.setWallAt(location, false)
+                continue
+            }
+            
+            //  /BH4
             game.over(false)
         }
         
@@ -103,6 +156,11 @@ function move_row() {
     //  BH2
     for (let ball of sprites.allOfKind(SpriteKind.Food)) {
         ball.y += 16
+    }
+    //  /BH2
+    //  BH6
+    for (let randomiser of sprites.allOfKind(SpriteKind.randomiser)) {
+        randomiser.y += 16
     }
 }
 
@@ -167,6 +225,45 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Food, function collect_bonus
     ball.destroy()
 })
 //  /BH2
+//  BH6
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.randomiser, function hit_randomiser(proj: Sprite, randomiser: Sprite) {
+    let angle = spriteutils.degreesToRadians(randint(1, 360))
+    spriteutils.setVelocityAtAngle(proj, angle, proj_speed)
+    spriteutils.placeAngleFrom(proj, angle, 5, randomiser)
+})
+//  /BH6
+//  GM2
+function horizontal_destroyer_hit(location: tiles.Location) {
+    let effect_sprite: Sprite;
+    for (let block of tilesAdvanced.getAllTilesWhereWallIs(true)) {
+        if (block.row == location.row) {
+            block_damage(block)
+            effect_sprite = sprites.create(image.create(160, 2))
+            effect_sprite.image.fill(9)
+            effect_sprite.setPosition(80, block.y)
+            effect_sprite.lifespan = 500
+        }
+        
+    }
+}
+
+//  /GM2
+//  GM2
+function vertical_destroyer_hit(location: tiles.Location) {
+    let effect_sprite: Sprite;
+    for (let block of tilesAdvanced.getAllTilesWhereWallIs(true)) {
+        if (block.col == location.col) {
+            block_damage(block)
+            effect_sprite = sprites.create(image.create(2, 120))
+            effect_sprite.image.fill(9)
+            effect_sprite.setPosition(block.x, 60)
+            effect_sprite.lifespan = 500
+        }
+        
+    }
+}
+
+//  /GM2
 function block_damage(location: any) {
     let effect_sprite: Sprite;
     if (tiles.tileAtLocationEquals(location, assets.tile`unbreakable`)) {
@@ -206,6 +303,16 @@ function block_damage(location: any) {
 
 //  /BH3
 scene.onHitWall(SpriteKind.Projectile, function wall_hit(proj: Sprite, location: tiles.Location) {
+    //  GM2
+    if (tiles.tileAtLocationEquals(location, assets.tile`horizontal`)) {
+        horizontal_destroyer_hit(location)
+    }
+    
+    if (tiles.tileAtLocationEquals(location, assets.tile`vertical`)) {
+        vertical_destroyer_hit(location)
+    }
+    
+    //  /GM2
     if (tiles.tileAtLocationEquals(location, assets.tile`block`)) {
         block_damage(location)
     }
@@ -257,9 +364,10 @@ function path() {
 
 //  /GH1
 sprites.onDestroyed(SpriteKind.Projectile, function trigger_game_loop() {
-    //  BH3
+    //  BH3 and BH5
     
-    //  /BH3
+    //  EDIT
+    //  /BH3 and /BH5
     if (tiles.getTilesByType(assets.tile`block`).length < 1) {
         game.over(true)
     }
@@ -268,6 +376,12 @@ sprites.onDestroyed(SpriteKind.Projectile, function trigger_game_loop() {
         //  BH3
         one_shot_active = false
         //  /BH3
+        //  BH5
+        if (randint(1, 1) == 1) {
+            lives += 1
+        }
+        
+        //  /BH5
         cycle_blocks()
     }
     
