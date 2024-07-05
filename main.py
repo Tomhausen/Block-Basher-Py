@@ -212,24 +212,24 @@ sprites.on_overlap(SpriteKind.projectile, SpriteKind.randomiser, hit_randomiser)
 
 # GM2
 def horizontal_destroyer_hit(location: tiles.Location):
+    effect_sprite = sprites.create(image.create(160, 2))
+    effect_sprite.image.fill(9)
+    effect_sprite.set_position(80, location.y)
+    effect_sprite.lifespan = 500
     for block in tilesAdvanced.get_all_tiles_where_wall_is(True):
         if block.row == location.row:
             block_damage(block)
-            effect_sprite = sprites.create(image.create(160, 2))
-            effect_sprite.image.fill(9)
-            effect_sprite.set_position(80, block.y)
-            effect_sprite.lifespan = 500
 # /GM2
 
 # GM2
 def vertical_destroyer_hit(location: tiles.Location):
+    effect_sprite = sprites.create(image.create(2, 120))
+    effect_sprite.image.fill(9)
+    effect_sprite.set_position(location.x, 60)
+    effect_sprite.lifespan = 500
     for block in tilesAdvanced.get_all_tiles_where_wall_is(True):
         if block.col == location.col:
             block_damage(block)
-            effect_sprite = sprites.create(image.create(2, 120))
-            effect_sprite.image.fill(9)
-            effect_sprite.set_position(block.x, 60)
-            effect_sprite.lifespan = 500
 # /GM2
 
 def block_damage(location):

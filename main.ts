@@ -234,14 +234,13 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.randomiser, function hit_ran
 //  /BH6
 //  GM2
 function horizontal_destroyer_hit(location: tiles.Location) {
-    let effect_sprite: Sprite;
+    let effect_sprite = sprites.create(image.create(160, 2))
+    effect_sprite.image.fill(9)
+    effect_sprite.setPosition(80, location.y)
+    effect_sprite.lifespan = 500
     for (let block of tilesAdvanced.getAllTilesWhereWallIs(true)) {
         if (block.row == location.row) {
             block_damage(block)
-            effect_sprite = sprites.create(image.create(160, 2))
-            effect_sprite.image.fill(9)
-            effect_sprite.setPosition(80, block.y)
-            effect_sprite.lifespan = 500
         }
         
     }
@@ -250,14 +249,13 @@ function horizontal_destroyer_hit(location: tiles.Location) {
 //  /GM2
 //  GM2
 function vertical_destroyer_hit(location: tiles.Location) {
-    let effect_sprite: Sprite;
+    let effect_sprite = sprites.create(image.create(2, 120))
+    effect_sprite.image.fill(9)
+    effect_sprite.setPosition(location.x, 60)
+    effect_sprite.lifespan = 500
     for (let block of tilesAdvanced.getAllTilesWhereWallIs(true)) {
         if (block.col == location.col) {
             block_damage(block)
-            effect_sprite = sprites.create(image.create(2, 120))
-            effect_sprite.image.fill(9)
-            effect_sprite.setPosition(block.x, 60)
-            effect_sprite.lifespan = 500
         }
         
     }
